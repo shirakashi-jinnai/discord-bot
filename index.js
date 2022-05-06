@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const { Client, Intents } = require("discord.js");
 const client = new Client({
+  //この要素は必須要素
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
 const token = process.env.DISCORD_TOKEN;
@@ -15,11 +16,21 @@ client.on("messageCreate", async (message) => {
     return;
   }
 
-  console.log(message.content);
-
   if (/そうはならんやろ/.test(message.content)) {
     let author = message.author.username;
     message.channel.send(`${author} なっとるやろがい！`);
+  }
+});
+
+client.on("interactionCreate", async (interaction) => {
+  // if (!interaction.isCommand()) {
+  //   console.log(interaction.commandName);
+  // }
+
+  console.log("interaction", interaction.isCommand.name);
+
+  if (interaction.commandName === "ping") {
+    await interaction.reply("Pong!");
   }
 });
 

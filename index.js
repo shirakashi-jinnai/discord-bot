@@ -7,7 +7,7 @@ const client = new Client({
 });
 const token = process.env.DISCORD_TOKEN;
 
-client.on("ready", () => {
+client.once("ready", () => {
   console.log(`${client.user.tag}でログインしています。`);
 });
 
@@ -23,14 +23,30 @@ client.on("messageCreate", async (message) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  // if (!interaction.isCommand()) {
-  //   console.log(interaction.commandName);
-  // }
+  const { commandName } = interaction;
+  if (!interaction.isCommand()) return;
 
   console.log("interaction", interaction.isCommand.name);
 
-  if (interaction.commandName === "ping") {
-    await interaction.reply("Pong!");
+  switch (commandName) {
+    case "ping":
+      await interaction.reply("Pong!");
+      break;
+
+    case "bot-info":
+      await interaction.reply(
+        "このボットはテストボットです。色々とつぶやきます。"
+      );
+      break;
+
+    case "member":
+      await interaction.reply(
+        `このサーバーには現在${interaction.guild.memberCount}人いる`
+      );
+      break;
+
+    default:
+      break;
   }
 });
 

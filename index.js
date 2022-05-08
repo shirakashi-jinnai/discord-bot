@@ -1,11 +1,21 @@
 require("dotenv").config();
-
-const { Client, Intents } = require("discord.js");
+const fs = require("node:fs");
+const { Client, Collection, Intents } = require("discord.js");
 const client = new Client({
-  //この要素は必須要素
+  //この要素は必須要素(v13から必須)
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
+client.commands = new Collection();
+const commandFiles = fs
+  .readdirSync("./commands")
+  .filter((file) => file.endsWith(".js"));
 const token = process.env.DISCORD_TOKEN;
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  // Collectionにkeyとvalueをセットする
+  client.commands.set(command.data.name, command);
+}
 
 client.once("ready", () => {
   console.log(`${client.user.tag}でログインしています。`);
@@ -26,27 +36,18 @@ client.on("interactionCreate", async (interaction) => {
   const { commandName } = interaction;
   if (!interaction.isCommand()) return;
 
-  console.log("interaction", interaction.isCommand.name);
+  const command = client.commands.get(commandName);
 
-  switch (commandName) {
-    case "ping":
-      await interaction.reply("Pong!");
-      break;
+  if (!command) return;
 
-    case "bot-info":
-      await interaction.reply(
-        "このボットはテストボットです。色々とつぶやきます。"
-      );
-      break;
-
-    case "member":
-      await interaction.reply(
-        `このサーバーには現在${interaction.guild.memberCount}人いる`
-      );
-      break;
-
-    default:
-      break;
+  try {
+    await command.execute(interaction);
+  } catch (err) {
+    console.error(err);
+    await interaction.reply({
+      content: "このコマンドの実行中にエラーが発生しました",
+      ephemeral: true,
+    });
   }
 });
 

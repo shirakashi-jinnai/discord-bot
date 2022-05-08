@@ -1,16 +1,21 @@
 require("dotenv").config();
-const { SlashCommandBuilder } = require("@discordjs/builders");
+const fs = require("node:fs");
 const { REST } = require("@discordjs/rest");
 const { Routes } = require("discord-api-types/v9");
 
 // discordAPTに対してスラッシュコマンドを登録
-const commands = [
-  new SlashCommandBuilder().setName("ping").setDescription("Replis with pong!"),
-  new SlashCommandBuilder().setName("bot-info").setDescription("ボットの詳細"),
-  new SlashCommandBuilder()
-    .setName("member")
-    .setDescription("サーバーメンバーの詳細"),
-].map((command) => command.toJSON());
+const commands = [];
+const commandFiles = fs
+  .readdirSync("./commands")
+  .filter((file) => file.endsWith(".js"));
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`);
+  commands.push(command.data.toJSON());
+}
+
+console.log(commands);
+
 const rest = new REST({ version: "9" }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {

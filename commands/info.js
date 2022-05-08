@@ -2,7 +2,7 @@ const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("bot-info")
+    .setName("info")
     .setDescription("ボットの詳細"),
 
   async execute(interaction) {

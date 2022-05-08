@@ -5,11 +5,15 @@ const client = new Client({
   //この要素は必須要素(v13から必須)
   intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
+module.exports = client;
+
+const token = process.env.DISCORD_TOKEN;
+
+//command
 client.commands = new Collection();
 const commandFiles = fs
   .readdirSync("./commands")
   .filter((file) => file.endsWith(".js"));
-const token = process.env.DISCORD_TOKEN;
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
@@ -17,38 +21,19 @@ for (const file of commandFiles) {
   client.commands.set(command.data.name, command);
 }
 
-client.once("ready", () => {
-  console.log(`${client.user.tag}でログインしています。`);
-});
+//event
+const eventFiles = fs
+  .readdirSync("./events")
+  .filter((file) => file.endsWith(".js"));
 
-client.on("messageCreate", async (message) => {
-  if (message.author.bot) {
-    return;
+for (const file of eventFiles) {
+  const event = require(`./events/${file}`);
+  if (event.once) {
+    //...argsはイベントごとに引数の数が異なるため使用している
+    client.once(event.name, (...args) => event.execute(...args));
+  } else {
+    client.on(event.name, (...args) => event.execute(...args));
   }
-
-  if (/そうはならんやろ/.test(message.content)) {
-    let author = message.author.username;
-    message.channel.send(`${author} なっとるやろがい！`);
-  }
-});
-
-client.on("interactionCreate", async (interaction) => {
-  const { commandName } = interaction;
-  if (!interaction.isCommand()) return;
-
-  const command = client.commands.get(commandName);
-
-  if (!command) return;
-
-  try {
-    await command.execute(interaction);
-  } catch (err) {
-    console.error(err);
-    await interaction.reply({
-      content: "このコマンドの実行中にエラーが発生しました",
-      ephemeral: true,
-    });
-  }
-});
+}
 
 client.login(token);

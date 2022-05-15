@@ -1,60 +1,52 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
+const { getApexResult } = require("../utils");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("apexの戦績")
-    .setDescription("テスト機能")
-    .addStringOption(
-      (option) =>
-        option
-          .setDescription("プラットフォームを入力してください")
-          .setRequired(true)
-      // .addChoices()
-      // .addChoice("Funny", "gif_funny")
-      // .addChoice("Meme", "gif_meme")
-      // .addChoice("Movie", "gif_movie")
+    .setDescription("プレイヤーIDを入力し戦績を表示")
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("origin")
+        .setDescription("Info about the server")
+        .addStringOption((option) =>
+          option
+            .setName("pid")
+            .setDescription("プレイヤーIDを入力")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("ps4")
+        .setDescription("Info about the server")
+        .addStringOption((option) =>
+          option
+            .setName("pid")
+            .setDescription("プレイヤーIDを入力")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName("xbox")
+        .setDescription("Info about the server")
+        .addStringOption((option) =>
+          option
+            .setName("pid")
+            .setDescription("プレイヤーIDを入力")
+            .setRequired(true)
+        )
     ),
-  // .addSubcommand((subcommand) =>
-  //   subcommand
-  //     .setName("pc")
-  //     .setDescription("Info about the server")
-  //     .addStringOption((option) =>
-  //       option
-  //         .setName("pid")
-  //         .setDescription("プレイヤーIDを入力")
-  //         .setRequired(true)
-  //     )
-  // )
-  // .addSubcommand((subcommand) =>
-  //   subcommand
-  //     .setName("ps4")
-  //     .setDescription("Info about the server")
-  //     .addStringOption((option) =>
-  //       option
-  //         .setName("pid")
-  //         .setDescription("プレイヤーIDを入力")
-  //         .setRequired(true)
-  //     )
-  // )
-  // .addSubcommand((subcommand) =>
-  //   subcommand
-  //     .setName("xbox")
-  //     .setDescription("Info about the server")
-  //     .addStringOption((option) =>
-  //       option
-  //         .setName("pid")
-  //         .setDescription("プレイヤーIDを入力")
-  //         .setRequired(true)
-  //     )
-  // ),
 
   async execute(interaction) {
-    console.log(interaction);
     const playerID = interaction.options.getString("pid");
-    // const choice = interaction.options.getChoice
+    let platform = interaction.options.getSubcommand();
+
+    const data = await getApexResult(platform, playerID);
 
     await interaction.reply(
-      `このボットはテストボットです。色々とつぶやきます。${playerID}`
+      `このボットはテストボットです。色々とつぶやきます。${playerID},${platform}\n${data}`
     );
   },
 };
